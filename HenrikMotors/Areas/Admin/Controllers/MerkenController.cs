@@ -52,7 +52,7 @@ namespace HenrikMotors.Areas.Admin.Controllers
             var merk = Mapper.Map<Merk>(merkDTO);
             db.Set<Merk>().Attach(merk);
             db.Entry(merk).State = EntityState.Modified;
-
+            await db.SaveChangesAsync();
             return Ok(merkDTO);
         }
 

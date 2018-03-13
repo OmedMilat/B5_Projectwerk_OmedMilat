@@ -28,8 +28,8 @@ namespace HenrikMotors.Models
         public string Versnellingen { get; set; }
         public string Cilinders { get; set; }
         public string Aandrijving { get; set; }
-        public int UitrustingId { get; set; }
-        public string UitrustingNaam { get; set; }
+        //public int UitrustingId { get; set; }
+        //public string UitrustingNaam { get; set; }
         public int MerkId { get; set; }
         public string MerkNaam { get; set; }
         public int CarrosserietypeId { get; set; }
@@ -65,6 +65,6 @@ namespace HenrikMotors.Models
     {
         public int VoertuigId { get; set; }
         public string UitrustingNaam { get; set; }
-        public string UitrustingId { get; set; }
+        public int UitrustingId { get; set; }
     }
 }

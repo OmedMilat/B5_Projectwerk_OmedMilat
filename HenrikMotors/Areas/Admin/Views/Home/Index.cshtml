@@ -3,10 +3,6 @@
 }
 
 <article id="app">  
-    @*<div class="form-group">
-        <label for="file">Foto uploaden:</label>
-        <input class="file" name="file" v-on:change="onFileChange" multiple id="files-upload" type="file">
-    </div>*@
     <div class="col-xs-12">
         <div class="tableheader col-xs-12">
             <h1 class="tabletitle">Voertuigen bewerken</h1>
@@ -34,7 +30,7 @@
             <tbody>
                 <tr v-for="voertuig in voertuigen">
                     <th scope="row">{{voertuig.Id}}</th>
-                    <td><img style="width:150px" src="~/Content/images/Foto1.png" /></td>
+                    <td><img style="width:150px" :src="'/Content/images/Voertuig'+voertuig.Id+'/1_'+voertuig.ArtikelNummer+'.png'" /></td>
                     <td>{{voertuig.MerkNaam}}</td>
                     <td>{{voertuig.Model}}</td>
                     <td>2018</td>
@@ -50,10 +46,9 @@
     @*Edit Mode*@
     <article id="Edit" class="row" v-if="IsEdit">
         <div class="col-sm-6 col-md-3">
-            <h2>Uiterlijk</h2>
             @*<div v-for="fotos in currentVoertuig.FotoNaam">
                 <span>{{fotos}}.png</span>
-                <img style="width:150px" v-bind:src="'/Content/images/' + fotos+'.png'" />
+                <img style="width:150px" v-bind:src="'/Content/images/voertuig128/' + fotos+'.png'" />
             </div>*@
             
             <div class="form-group">
@@ -99,7 +94,6 @@
             </div>
         </div>
         <div class="col-sm-6 col-md-7 ">
-            <h2>Technisch</h2>
             <div class="form-group">
                 <label for="Aandrijving">Aandrijving:</label>
                 <input v-model="currentVoertuig.Aandrijving" class="form-control" id="Aandrijving">
@@ -122,14 +116,19 @@
             </div>
             <div class="form-group">
                 <label>Uitrusting:</label>
-                <div v-for="Uitrusting in currentVoertuig.VoertuigUitrusting">
-                    <span for="Uitrusting">{{Uitrusting.UitrustingNaam}}:</span>
-                    <input type="checkbox" checked="checked" class="form-check" id="Uitrusting">
+                <div v-for="(Uitrusting,index) in uitrustingen">
+                    <input type="checkbox" v-model="voertuigUitrusting" :value="Uitrusting.Id"  
+                           class="form-check" :id="Uitrusting.Naam">
+                    <label :for="Uitrusting.Naam">{{Uitrusting.Naam}}</label>
+                </div>
+                <div v-for="(uit,i) in newUitrusting">
+                    <input type="checkbox" v-model="uit.Add"  />
+                    <input id="newuit" v-on:input="changeUitrustingen(uit)" v-model="uit.UitrustingNaam" />
                 </div>
             </div>
-            <div class="form-group">
+            <div class="file-loading">
                 <label for="file">Foto uploaden:</label>
-                <input @*class="file"*@ v-on:change="onFileChange" name="fotos[]" multiple id="files-upload" type="file">
+                <input v-on:change="onFileChange" name="fotos[]" multiple id="files-upload" type="file">
             </div>
             <div>
                 <a class="btn btn-warning" v-if="IsEdit" v-on:click="IsEdit = !IsEdit">

@@ -20,26 +20,27 @@ namespace HenrikMotors
                         "~/Scripts/modernizr-*"));
 
             bundles.Add(new ScriptBundle("~/bundles/bootstrap").Include(
-                      "~/Scripts/bootstrap.js",
+                      "~/Scripts/bootstrap.min.js",
                       "~/Scripts/respond.js",
-                      "~/Scripts/bootstrap-combobox.js",
-                      "~/Scripts/bootstrap-select.min.js",
+                      "~/Scripts/Bootstrap plugins/Select/bootstrap-select.min.js",
                       "~/Scripts/vue.js"));
 
             bundles.Add(new StyleBundle("~/Content/css").Include(
                       "~/Content/Site.css",
-                      "~/Content/bootstrap-combobox.css",
-                      "~/Content/bootstrap-select.min.css",
+                      "~/Content/Bootstrap plugins/Select/bootstrap-select.min.css",
                       "~/Content/Main.css"));
 
             bundles.Add(new ScriptBundle("~/bundles/AdminSectionScripts").Include(
                 "~/Scripts/Javascript/AdminSection/AdminSection.js",
-                "~/Scripts/fileinput.js",
-                "~/Scripts/sortable.min.js"));
+                "~/Scripts/Bootstrap plugins/Fileinput/fileinput.js",
+                "~/Scripts/Bootstrap plugins/Fileinput/theme.min.js",
+                "~/Scripts/Bootstrap plugins/Fileinput/sortable.min.js",
+                "~/Scripts/Bootstrap plugins/Fileinput/nl.js"));
 
             bundles.Add(new StyleBundle("~/bundles/AdminSectionCss").Include(
                 "~/Content/AdminSection/Admin.css",
-                "~/Content/fileinput.min.css"));
+                "~/Content/Bootstrap plugins/Fileinput/fileinput.min.css",
+                "~/Content/Bootstrap plugins/Fileinput/theme.min.css"));
         }
     }
 }

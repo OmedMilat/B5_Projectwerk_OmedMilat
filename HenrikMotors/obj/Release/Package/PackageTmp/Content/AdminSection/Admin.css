@@ -1,0 +1,59 @@
+﻿/*#region CRUD pagina*/
+
+/*Table header*/
+.tableheader {
+    border-radius: 3px;
+    margin-top: 20px;
+    padding: 20px;
+    padding-bottom: 15px;
+    background-color: #222222;
+}
+
+.tabletitle {
+    display: inline;
+    color: white;
+}
+
+.tablebutton {
+    float: right;
+}
+
+.plusicon {
+    padding-right: 7px;
+}
+/*Table icons*/
+.edit {
+    color: gray;
+    font-size: 18pt;
+    cursor: pointer;
+    margin-right: 0.7vw;
+}
+
+    .edit:hover {
+        color: black;
+    }
+
+.remove {
+    color: red;
+    font-size: 18pt;
+    cursor: pointer;
+}
+
+    .remove:hover {
+        color: darkred;
+    }
+
+/*Select Option*/
+.selectOption {
+    background-color: #5cb85c;
+    padding: 3px;
+    width: 118%;
+    display: block;
+    text-align: center;
+    color: white;
+    margin-left: -20px;
+}
+.selectIcon {
+    margin-left: 5px
+}
+/*#endregion*/

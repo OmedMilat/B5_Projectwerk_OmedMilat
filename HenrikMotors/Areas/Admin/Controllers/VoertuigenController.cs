@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Data;
 using System.Data.Entity;
 using System.Data.Entity.Infrastructure;
 using System.Linq;
@@ -10,13 +9,14 @@ using System.Threading.Tasks;
 using System.Web.Http;
 using System.Web.Http.Description;
 using HenrikMotors.Models;
-using HenrikMotors.Areas.Admin.Models;
 using AutoMapper.QueryableExtensions;
 using AutoMapper;
-using System.Web;
-using System.Web.Mvc;
 using System.Text;
 using System.IO;
+using System.Web;
+using System.Net.Http.Headers;
+using System.Net.Http.Formatting;
+using ChangeFileName;
 
 namespace HenrikMotors.Areas.Admin.Controllers
 {
@@ -24,6 +24,7 @@ namespace HenrikMotors.Areas.Admin.Controllers
     {
         //int CurrentId;
         private HenrikMotorsContext db = new HenrikMotorsContext();
+        static int currentId;
         // GET: api/Voertuigen
         public IQueryable<VoertuigDTO> GetVoertuigen()
         {
@@ -60,13 +61,16 @@ namespace HenrikMotors.Areas.Admin.Controllers
                 await NewCategorie(voertuigDetailDTO);
             }
 
+
             Voertuig voertuig = Mapper.Map<Voertuig>(voertuigDetailDTO);
             db.Set<Voertuig>().Attach(voertuig);
+            await ChangeUitrusting(voertuig, voertuigDetailDTO.VoertuigUitrusting);
             db.Entry(voertuig).State = EntityState.Modified;
 
             try
             {
                 await db.SaveChangesAsync();
+                currentId = voertuig.Id;
             }
             catch (DbUpdateConcurrencyException)
             {
@@ -82,9 +86,9 @@ namespace HenrikMotors.Areas.Admin.Controllers
 
             return Ok(voertuigDetailDTO);
         }
-        Task<int> t1;
+
         // POST: api/Voertuigen
-        [System.Web.Http.Route("api/voertuigen/PostVoertuig")]
+        [Route("api/voertuigen/PostVoertuig")]
         [ResponseType(typeof(Voertuig))]
         public async Task<IHttpActionResult> PostVoertuig(VoertuigDetailDTO voertuigDetailDTO)
         {
@@ -97,15 +101,16 @@ namespace HenrikMotors.Areas.Admin.Controllers
                 await NewCategorie(voertuigDetailDTO);
             }
             Voertuig voertuig = Mapper.Map<Voertuig>(voertuigDetailDTO);
+            await ChangeUitrusting(voertuig, voertuigDetailDTO.VoertuigUitrusting);
             db.Voertuigen.Add(voertuig);
             await db.SaveChangesAsync();
             voertuigDetailDTO.Id = voertuig.Id;
-
+            currentId = voertuig.Id;
             return Ok(voertuigDetailDTO);
         }
 
-        [System.Web.Http.Route("api/voertuigen/PostFile/{id}/{length}")]
-        public async Task<HttpResponseMessage> PostFile(int id,int length)
+        [Route("api/voertuigen/PostFile/{length}")]
+        public async Task<HttpResponseMessage> PostFile(int length)
         {
             HttpRequestMessage request = this.Request;
             if (!request.Content.IsMimeMultipartContent())
@@ -113,26 +118,24 @@ namespace HenrikMotors.Areas.Admin.Controllers
                 throw new HttpResponseException(HttpStatusCode.UnsupportedMediaType);
             }
 
-            string root = HttpContext.Current.Server.MapPath("~/Content/images/Voertuig" + id);
+            string root = HttpContext.Current.Server.MapPath("~/Content/images/Voertuig" + currentId);
 
             if (!Directory.Exists(root))
                 Directory.CreateDirectory(root);
 
             while (length > 0)
             {
-                await NewFoto(id, "1");
+                await NewFoto(currentId, "1");
                 length--;
             }
             var provider = new CustomMultipartFormDataStreamProvider(root, fotoList);
 
             await Request.Content.ReadAsMultipartAsync(provider);
-            var lol = provider.FileData.Count;
             foreach (MultipartFileData file in provider.FileData)
             {
                 //await NewFoto(id, "1");
                 string file1 = provider.FileData.First().LocalFileName;
             }
-            fotoList.Clear();
             var response = this.Request.CreateResponse(HttpStatusCode.OK);
             response.Content = new StringContent("{ }", Encoding.UTF8, "application/json");
             return response;
@@ -147,13 +150,68 @@ namespace HenrikMotors.Areas.Admin.Controllers
             {
                 return NotFound();
             }
+            string Fotomap = HttpContext.Current.Server.MapPath("~/Content/images/Voertuig" + id);
+            if (Directory.Exists(Fotomap))
+            {
+                Directory.Delete(Fotomap, true);
+            }
 
             db.Voertuigen.Remove(voertuig);
             await db.SaveChangesAsync();
 
             return Ok(voertuig);
         }
+        [HttpPost]
+        [Route("api/voertuigen/DeleteFile")]
+        public async Task<HttpResponseMessage> DeleteFile(FormDataCollection formData)
+        {
+            string foto = formData["fileName"];
+            int voertuigid = Convert.ToInt32(formData["id"]);
+            string Fotomap = HttpContext.Current.Server.MapPath($"~/Content/images/Voertuig{voertuigid}/{foto}.png");
+            DirectoryInfo directoryInfo = new DirectoryInfo(Fotomap);
+            if (File.Exists(Fotomap))
+            {
+                await DeleteFoto(voertuigid, foto);
+                File.Delete(Fotomap);
+            }
 
+            var response = Request.CreateResponse(HttpStatusCode.OK);
+            response.Content = new StringContent("{ }", Encoding.UTF8, "application/json");
+            return response;
+        }
+
+        [HttpPost]
+        [Route("api/voertuigen/ChangeFileName")]
+        public async Task<HttpResponseMessage> ChangeFileName(List<SortFileName> sortFileName)
+        {
+            int Id = sortFileName[0].Extra.Id;
+            List<string> Temporary = new List<string>();
+            List<int> NewPosition = new List<int>();
+            string Fotomap = HttpContext.Current.Server.MapPath($"~/Content/images/Voertuig{Id}/");
+
+            for (int i = 0; i < sortFileName.Count; i++)
+            {
+                int Position = i + 1;
+                if (Position != sortFileName[i].Key)
+                {
+                    string OldFileName = $"{Fotomap}{sortFileName[i].Filename}";
+                    string tem = $"{Fotomap}{Position}_Ghost_{sortFileName[i].Filename}";
+                    NewPosition.Add(Position);
+                    Temporary.Add(tem);
+                    File.Move(OldFileName, tem);
+                }
+
+            }
+            for (int i = 0; i < Temporary.Count; i++)
+            {
+                string NewFileName = $"{Fotomap}{NewPosition[i]}_HMPV-{Id}.png";
+                File.Move(Temporary[i], NewFileName);
+            }
+
+            var response = Request.CreateResponse(HttpStatusCode.OK);
+            response.Content = new StringContent("{ }", Encoding.UTF8, "application/json");
+            return response;
+        }
         protected override void Dispose(bool disposing)
         {
             if (disposing)
@@ -196,6 +254,52 @@ namespace HenrikMotors.Areas.Admin.Controllers
                 voertuigDetailDTO.CarrosserietypeId = carrosserietype.Id;
             }
         }
+
+        async Task ChangeUitrusting(Voertuig voertuig, ICollection<VoertuigUitrustingDTO> voertuigUitrustingDTO)
+        {
+            //Toevoegen
+            List<VoertuigUitrusting> UitrustingCompare = new List<VoertuigUitrusting>();
+            for (int i = 0; i < voertuig.VoertuigUitrusting.Count; i++)
+            {
+                var CurrentUitr = voertuig.VoertuigUitrusting.ElementAtOrDefault(i);
+                if (CurrentUitr.UitrustingId <= 0)
+                {
+                    CurrentUitr = await NewUitrusting(voertuigUitrustingDTO.
+                        First(nu => nu.UitrustingId == CurrentUitr.UitrustingId));
+                }
+                var ExistsInDb = db.VoertuigUitrusting.FirstOrDefault(vu => vu.UitrustingId == CurrentUitr.UitrustingId
+                && vu.VoertuigId == voertuig.Id);
+                if (ExistsInDb != null)
+                    UitrustingCompare.Add(ExistsInDb);
+                if (ExistsInDb?.UitrustingId == null)
+                    db.VoertuigUitrusting.Add(CurrentUitr);
+            }
+
+            //Verwijderen
+            List<VoertuigUitrusting> UitrustingToDelete = db.VoertuigUitrusting.Where(vu => vu.VoertuigId == voertuig.Id).ToList();
+            for (var i = 0; i < UitrustingToDelete.Count; i++)
+            {
+                if (UitrustingCompare.FindIndex(u => u.UitrustingId.Equals(UitrustingToDelete[i].UitrustingId)) == -1)
+                {
+                    db.VoertuigUitrusting.Remove(UitrustingToDelete[i]);
+                }
+            }
+        }
+        async Task<VoertuigUitrusting> NewUitrusting(VoertuigUitrustingDTO voertuigUitrustingDTO)
+        {
+            Uitrusting uitrusting = new Uitrusting
+            {
+                Id = 1,
+                Naam = voertuigUitrustingDTO.UitrustingNaam
+            };
+            db.Uitrustingen.Add(uitrusting);
+            await db.SaveChangesAsync();
+            voertuigUitrustingDTO.UitrustingId = uitrusting.Id;
+            voertuigUitrustingDTO.UitrustingNaam = uitrusting.Naam;
+            var voertuigUitrusting = Mapper.Map<VoertuigUitrusting>(voertuigUitrustingDTO);
+            return voertuigUitrusting;
+        }
+
         public List<string> fotoList;
         async Task NewFoto(int id, string order2)
         {
@@ -205,7 +309,7 @@ namespace HenrikMotors.Areas.Admin.Controllers
             else
                 fotoList = currentVoertuig.LijstFotos.Split(',').ToList();
 
-            int order = fotoList.Count+1;
+            int order = fotoList.Count + 1;
 
             string Foto = $"{order}_{currentVoertuig.ArtikelNummer}";
             fotoList.Add(Foto);
@@ -215,10 +319,16 @@ namespace HenrikMotors.Areas.Admin.Controllers
             await db.SaveChangesAsync();
         }
 
-        public async Task<int> CurrentId(int id)
+        async Task DeleteFoto(int id, string naam)
         {
-            await Task.Delay(0);
-            return id;
+            Voertuig currentVoertuig = await db.Voertuigen.FindAsync(id);
+            fotoList = currentVoertuig.LijstFotos.Split(',').ToList();
+            //var currentItem = fotoList.IndexOf(naam);
+            fotoList.RemoveAt(fotoList.Count - 1);
+            currentVoertuig.LijstFotos = string.Join(",", fotoList);
+            db.Set<Voertuig>().Attach(currentVoertuig);
+            db.Entry(currentVoertuig).State = EntityState.Modified;
+            await db.SaveChangesAsync();
         }
 
         public class CustomMultipartFormDataStreamProvider : MultipartFormDataStreamProvider
@@ -230,7 +340,7 @@ namespace HenrikMotors.Areas.Admin.Controllers
                 CustomFileName = Voertuig;
             }
 
-            public override string GetLocalFileName(System.Net.Http.Headers.HttpContentHeaders headers)
+            public override string GetLocalFileName(HttpContentHeaders headers)
             {
                 //string Extension = headers.ContentDisposition.FileName.Trim('\"');
                 string OriginalFileName = $"{CustomFileName[CustomFileName.Count - index]}.png";
