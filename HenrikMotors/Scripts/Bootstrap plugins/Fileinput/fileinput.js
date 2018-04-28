@@ -503,7 +503,6 @@
             self.totalImagesCount = 0;
             self.ajaxRequests = [];
             self.clearStack();
-            self.fileInputCleared = false;
             self.fileBatchCompleted = true;
             if (!self.isPreviewable) {
                 self.showPreview = false;
@@ -560,7 +559,7 @@
             }
             self.isAjaxUpload = $h.hasFileUploadSupport() && !$h.isEmpty(self.uploadUrl);
             self.isClickable = self.browseOnZoneClick && self.showPreview &&
-                (self.isAjaxUpload && self.dropZoneEnabled || !$h.isEmpty(self.defaultPreviewContent));
+                (self.dropZoneEnabled || !$h.isEmpty(self.defaultPreviewContent));
             self.slug = typeof options.slugCallback === "function" ? options.slugCallback : self._slugDefault;
             self.mainTemplate = self.showCaption ? self._getLayoutTemplate('main1') : self._getLayoutTemplate('main2');
             self.captionTemplate = self._getLayoutTemplate('caption');
@@ -621,7 +620,7 @@
             var self = this, tMain1, tMain2, tPreview, tFileIcon, tClose, tCaption, tBtnDefault, tBtnLink, tBtnBrowse,
                 tModalMain, tModal, tProgress, tSize, tFooter, tActions, tActionDelete, tActionUpload, tActionDownload,
                 tActionZoom, tActionDrag, tIndicator, tTagBef, tTagBef1, tTagBef2, tTagAft, tGeneric, tHtml, tImage,
-                tText, tOffice, tVideo, tAudio, tFlash, tObject, tPdf, tOther, tStyle, tZoomCache, vDefaultDim;
+                tText, tOffice, tGdocs, tVideo, tAudio, tFlash, tObject, tPdf, tOther, tStyle, tZoomCache, vDefaultDim;
             tMain1 = '{preview}\n' +
                 '<div class="kv-upload-progress kv-hidden"></div><div class="clearfix"></div>\n' +
                 '<div class="input-group {class}">\n' +
@@ -718,6 +717,8 @@
             tText = '<textarea class="kv-preview-data file-preview-text" title="{caption}" readonly' + tStyle + '>' +
                 '{data}</textarea>\n';
             tOffice = '<iframe class="kv-preview-data file-preview-office" ' +
+                'src="https://view.officeapps.live.com/op/embed.aspx?src={data}"' + tStyle + '></iframe>';
+            tGdocs = '<iframe class="kv-preview-data file-preview-gdocs" ' +
                 'src="https://docs.google.com/gview?url={data}&embedded=true"' + tStyle + '></iframe>';
             tVideo = '<video class="kv-preview-data file-preview-video" controls' + tStyle + '>\n' +
                 '<source src="{data}" type="{type}">\n' + $h.DEFAULT_PREVIEW + '\n</video>\n';
@@ -767,6 +768,7 @@
                     image: tImage,
                     text: tText,
                     office: tOffice,
+                    gdocs: tGdocs,
                     video: tVideo,
                     audio: tAudio,
                     flash: tFlash,
@@ -781,6 +783,7 @@
                     html: {width: "213px", height: "160px"},
                     text: {width: "213px", height: "160px"},
                     office: {width: "213px", height: "160px"},
+                    gdocs: {width: "213px", height: "160px"},
                     video: {width: "213px", height: "160px"},
                     audio: {width: "100%", height: "30px"},
                     flash: {width: "213px", height: "160px"},
@@ -793,6 +796,7 @@
                     html: {width: "100%", height: "160px"},
                     text: {width: "100%", height: "160px"},
                     office: {width: "100%", height: "160px"},
+                    gdocs: {width: "100%", height: "160px"},
                     video: {width: "100%", height: "auto"},
                     audio: {width: "100%", height: "30px"},
                     flash: {width: "100%", height: "auto"},
@@ -805,6 +809,7 @@
                     html: vDefaultDim,
                     text: vDefaultDim,
                     office: {width: "100%", height: "100%", 'max-width': "100%", 'min-height': "480px"},
+                    gdocs: {width: "100%", height: "100%", 'max-width': "100%", 'min-height': "480px"},
                     video: {width: "auto", height: "100%", 'max-width': "100%"},
                     audio: {width: "100%", height: "30px"},
                     flash: {width: "auto", height: "480px"},
@@ -821,8 +826,12 @@
                         return $h.compare(vType, 'text/html') || $h.compare(vName, /\.(htm|html)$/i);
                     },
                     office: function (vType, vName) {
+                        return $h.compare(vType, /(word|excel|powerpoint|office)$/i) ||
+                            $h.compare(vName, /\.(docx?|xlsx?|pptx?|pps|potx?)$/i);
+                    },
+                    gdocs: function (vType, vName) {
                         return $h.compare(vType, /(word|excel|powerpoint|office|iwork-pages|tiff?)$/i) ||
-                            $h.compare(vName, /\.(rtf|docx?|xlsx?|pptx?|pps|potx?|ods|odt|pages|ai|dxf|ttf|tiff?|wmf|e?ps)$/i);
+                            $h.compare(vName, /\.(docx?|xlsx?|pptx?|pps|potx?|rtf|ods|odt|pages|ai|dxf|ttf|tiff?|wmf|e?ps)$/i);
                     },
                     text: function (vType, vName) {
                         return $h.compare(vType, 'text.*') || $h.compare(vName, /\.(xml|javascript)$/i) ||
@@ -1391,7 +1400,7 @@
             $zone.attr('tabindex', -1);
             self._handler($zone, 'click', function (e) {
                 var $tar = $(e.target);
-                if (!$zone.find('.kv-fileinput-error:visible').length &&
+                if (!$(self.elErrorContainer + ':visible').length &&
                     (!$tar.parents('.file-preview-thumbnails').length || $tar.parents('.file-default-preview').length)) {
                     self.$element.trigger('click');
                     $zone.blur();
@@ -1400,7 +1409,7 @@
         },
         _initDragDrop: function () {
             var self = this, $zone = self.$dropZone;
-            if (self.isAjaxUpload && self.dropZoneEnabled && self.showPreview) {
+            if (self.dropZoneEnabled && self.showPreview) {
                 self._handler($zone, 'dragenter dragover', $.proxy(self._zoneDragEnter, self));
                 self._handler($zone, 'dragleave', $.proxy(self._zoneDragLeave, self));
                 self._handler($zone, 'drop', $.proxy(self._zoneDrop, self));
@@ -1821,28 +1830,22 @@
         },
         _clearFileInput: function () {
             var self = this, $el = self.$element, $srcFrm, $tmpFrm, $tmpEl;
-            self.fileInputCleared = true;
-            if ($h.isEmpty($el.val())) {
+            if ($h.isEmpty($el.files) && $h.isEmpty($el.val())) {
                 return;
             }
-            // Fix for IE ver < 11, that does not clear file inputs. Requires a sequence of steps to prevent IE
-            // crashing but still allow clearing of the file input.
-            if (self.isIE9 || self.isIE10) {
-                $srcFrm = $el.closest('form');
-                $tmpFrm = $(document.createElement('form'));
-                $tmpEl = $(document.createElement('div'));
-                $el.before($tmpEl);
-                if ($srcFrm.length) {
-                    $srcFrm.after($tmpFrm);
-                } else {
-                    $tmpEl.after($tmpFrm);
-                }
-                $tmpFrm.append($el).trigger('reset');
-                $tmpEl.before($el).remove();
-                $tmpFrm.remove();
-            } else { // normal input clear behavior for other sane browsers
-                $el.val('');
+            $el.files = null;
+            $srcFrm = $el.closest('form');
+            $tmpFrm = $(document.createElement('form'));
+            $tmpEl = $(document.createElement('div'));
+            $el.before($tmpEl);
+            if ($srcFrm.length) {
+                $srcFrm.after($tmpFrm);
+            } else {
+                $tmpEl.after($tmpFrm);
             }
+            $tmpFrm.append($el).trigger('reset');
+            $tmpEl.before($el).remove();
+            $tmpFrm.remove();
         },
         _resetUpload: function () {
             var self = this;
@@ -2000,10 +2003,15 @@
             }
             return xhrobj;
         },
+        _initAjaxSettings: function () {
+            var self = this;
+            self._ajaxSettings = $.extend(true, {}, self.ajaxSettings);
+            self._ajaxDeleteSettings = $.extend(true, {}, self.ajaxDeleteSettings);
+        },
         _mergeAjaxCallback: function (funcName, srcFunc, type) {
-            var self = this, settings = self.ajaxSettings, flag = self.mergeAjaxCallbacks, targFunc;
+            var self = this, settings = self._ajaxSettings, flag = self.mergeAjaxCallbacks, targFunc;
             if (type === 'delete') {
-                settings = self.ajaxDeleteSettings;
+                settings = self._ajaxDeleteSettings;
                 flag = self.mergeAjaxDeleteCallbacks;
             }
             targFunc = settings[funcName];
@@ -2022,11 +2030,6 @@
             } else {
                 settings[funcName] = srcFunc;
             }
-            if (type === 'delete') {
-                self.ajaxDeleteSettings = settings;
-            } else {
-                self.ajaxSettings = settings;
-            }
         },
         _ajaxSubmit: function (fnBefore, fnSuccess, fnComplete, fnError, previewId, index) {
             var self = this, settings;
@@ -2034,6 +2037,7 @@
                 return;
             }
             self._uploadExtra(previewId, index);
+            self._initAjaxSettings();
             self._mergeAjaxCallback('beforeSend', fnBefore);
             self._mergeAjaxCallback('success', fnSuccess);
             self._mergeAjaxCallback('complete', fnComplete);
@@ -2050,7 +2054,7 @@
                 cache: false,
                 processData: false,
                 contentType: false
-            }, self.ajaxSettings);
+            }, self._ajaxSettings);
             self.ajaxRequests.push($.ajax(settings));
         },
         _mergeArray: function (prop, content) {
@@ -2659,6 +2663,7 @@
                     $el.removeClass('disabled ' + origClass).addClass(errClass);
                     resetProgress();
                 };
+                self._initAjaxSettings();
                 self._mergeAjaxCallback('beforeSend', fnBefore, 'delete');
                 self._mergeAjaxCallback('success', fnSuccess, 'delete');
                 self._mergeAjaxCallback('error', fnError, 'delete');
@@ -2667,7 +2672,7 @@
                     type: 'POST',
                     dataType: 'json',
                     data: $.extend(true, {}, {key: vKey}, extraData)
-                }, self.ajaxDeleteSettings);
+                }, self._ajaxDeleteSettings);
                 self._handler($el, 'click', function () {
                     if (!self._validateMinCount()) {
                         return false;
@@ -2932,7 +2937,8 @@
                 title += self.dropZoneClickTitle.replace('{files}', strFiles);
             }
             $zone.find('.' + self.dropZoneTitleClass).remove();
-            if (!self.isAjaxUpload || !self.showPreview || $zone.length === 0 || self.getFileStack().length > 0 || !self.dropZoneEnabled) {
+            if (!self.showPreview || $zone.length === 0 || self.getFileStack().length > 0 || !self.dropZoneEnabled ||
+                (!self.isAjaxUpload && self.$element.files)) {
                 return;
             }
             if ($zone.find($h.FRAMES).length === 0 && $h.isEmpty(self.defaultPreviewContent)) {
@@ -3246,7 +3252,7 @@
         },
         _renderMain: function () {
             var self = this,
-                dropCss = (self.isAjaxUpload && self.dropZoneEnabled) ? ' file-drop-zone' : 'file-drop-disabled',
+                dropCss = self.dropZoneEnabled ? ' file-drop-zone' : 'file-drop-disabled',
                 close = !self.showClose ? '' : self._getLayoutTemplate('close'),
                 preview = !self.showPreview ? '' : self._getLayoutTemplate('preview')
                     .setTokens({'class': self.previewClass, 'dropClass': dropCss}),
@@ -3427,34 +3433,46 @@
             fileIds.push(fileId);
         },
         _change: function (e) {
-            var self = this, $el = self.$element;
-            if (!self.isAjaxUpload && $h.isEmpty($el.val()) && self.fileInputCleared) { // IE 11 fix
-                self.fileInputCleared = false;
-                return;
-            }
-            self.fileInputCleared = false;
-            var tfiles = [], msg, total, isDragDrop = arguments.length > 1, isAjaxUpload = self.isAjaxUpload, n, len,
-                files = isDragDrop ? e.originalEvent.dataTransfer.files : $el.get(0).files, ctr = self.filestack.length,
-                isSingleUpload = $h.isEmpty($el.attr('multiple')), flagSingle = (isSingleUpload && ctr > 0),
-                folders = 0, fileIds = self._getFileIds(), throwError = function (mesg, file, previewId, index) {
+            var self = this, $el = self.$element, isDragDrop = arguments.length > 1, isAjaxUpload = self.isAjaxUpload,
+                tfiles = [], files = isDragDrop ? e.originalEvent.dataTransfer.files : $el.get(0).files, msg, total,
+                len, ctr = self.filestack.length, isSingleUpload = $h.isEmpty($el.attr('multiple')),
+                flagSingle = (isSingleUpload && ctr > 0), folders = 0, fileIds = self._getFileIds(),
+                throwError = function (mesg, file, previewId, index) {
                     var p1 = $.extend(true, {}, self._getOutData({}, {}, files), {id: previewId, index: index}),
                         p2 = {id: previewId, index: index, file: file, files: files};
-                    return self.isAjaxUpload ? self._showUploadError(mesg, p1) : self._showError(mesg, p2);
+                    return isAjaxUpload ? self._showUploadError(mesg, p1) : self._showError(mesg, p2);
+                }, maxCountCheck = function (n, m) {
+                    var msg = self.msgFilesTooMany.replace('{m}', m).replace('{n}', n);
+                    self.isError = throwError(msg, null, null, null);
+                    self.$captionContainer.removeClass('icon-visible');
+                    self._setCaption('', true);
+                    self.$container.removeClass('file-input-new file-input-ajax-new');
                 };
             self.reader = null;
             self._resetUpload();
             self._hideFileIcon();
-            if (self.isAjaxUpload) {
+            if (self.dropZoneEnabled) {
                 self.$container.find('.file-drop-zone .' + self.dropZoneTitleClass).remove();
             }
             if (isDragDrop) {
-                $.each(files, function (i, f) {
-                    if (f && !f.type && f.size !== undefined && f.size % 4096 === 0) {
-                        folders++;
+                if (self.isAjaxUpload) {
+                    $.each(files, function (i, f) {
+                        if (f && !f.type && f.size !== undefined && f.size % 4096 === 0) {
+                            folders++;
+                        } else {
+                            self._filterDuplicate(f, tfiles, fileIds);
+                        }
+                    });
+                } else {
+                    tfiles = files;
+                    len = tfiles.length;
+                    if (isSingleUpload && len > 1) {
+                        maxCountCheck(len, 1);
+                        return;
                     } else {
-                        self._filterDuplicate(f, tfiles, fileIds);
+                        $el.files = tfiles;
                     }
-                });
+                }
             } else {
                 if (e.target && e.target.files === undefined) {
                     files = e.target.value ? [{name: e.target.value.replace(/^.+\\/, '')}] : [];
@@ -3479,15 +3497,10 @@
             }
             self._resetErrors();
             len = tfiles.length;
-            total = self._getFileCount(self.isAjaxUpload ? (self.getFileStack().length + len) : len);
+            total = self._getFileCount(isAjaxUpload ? (self.getFileStack().length + len) : len);
             if (self.maxFileCount > 0 && total > self.maxFileCount) {
                 if (!self.autoReplace || len > self.maxFileCount) {
-                    n = (self.autoReplace && len > self.maxFileCount) ? len : total;
-                    msg = self.msgFilesTooMany.replace('{m}', self.maxFileCount).replace('{n}', n);
-                    self.isError = throwError(msg, null, null, null);
-                    self.$captionContainer.removeClass('icon-visible');
-                    self._setCaption('', true);
-                    self.$container.removeClass('file-input-new file-input-ajax-new');
+                    maxCountCheck(self.autoReplace && len > self.maxFileCount ? len : total, self.maxFileCount);
                     return;
                 }
                 if (total > self.maxFileCount) {
@@ -3943,7 +3956,7 @@
             self._resetPreview();
             self.$container.find('.fileinput-filename').text('');
             $h.addCss(self.$container, 'file-input-new');
-            if (self.getFrames().length || self.isAjaxUpload && self.dropZoneEnabled) {
+            if (self.getFrames().length || self.dropZoneEnabled) {
                 self.$container.removeClass('file-input-new');
             }
             self.clearStack();

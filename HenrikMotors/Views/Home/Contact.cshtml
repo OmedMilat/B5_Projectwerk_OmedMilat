@@ -1,5 +1,6 @@
-﻿@{
-    ViewBag.Title = "Contact";
+﻿@using System.Web.Optimization
+@{
+    ViewBag.Title = "Home Page";
 }
 <h2>@ViewBag.Title.</h2>
 <h3>@ViewBag.Message</h3>
@@ -15,3 +16,15 @@
     <strong>Support:</strong>   <a href="mailto:Support@example.com">Support@example.com</a><br />
     <strong>Marketing:</strong> <a href="mailto:Marketing@example.com">Marketing@example.com</a>
 </address>
+<div id="app">
+    <Fetch-Api-Data inline-template>
+            <div class="row">
+                <div class="col-md-6 col-xl-4 cards col-xxl-3" v-for="(voertuig,i) in carrosserietypes" :key="i">
+                   {{voertuig.Naam}}
+                </div>
+            </div>
+        </Fetch-Api-Data>
+</div>
+@section Scripts{
+    @Scripts.Render("~/Scripts/bundle/Home.js")
+}

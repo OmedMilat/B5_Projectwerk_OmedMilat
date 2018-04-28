@@ -17,7 +17,7 @@ namespace HenrikMotors
                 name: "Default",
                 url: "{controller}/{action}/{id}",
                 defaults: new {controller = "Home", action = "Index", id = UrlParameter.Optional },
-                namespaces: new[] { "HenrikMotors.Areas.Admin.Controllers" }
+                namespaces: new[] { "HenrikMotors.Controllers" }
             );
         }
     }

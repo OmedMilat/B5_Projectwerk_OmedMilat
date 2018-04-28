@@ -1,11 +1,18 @@
-﻿/**
+﻿import Vue from 'vue';
+
+/**
  * Vue CRUD Section
  **/
+function Authenticate() {
+    //if (sessionStorage.getItem("accessToken") == null) {
+    //    window.location.pathname = "/home/login";
+    //}
+}
 var apiURL = '/api/'
 var app = new Vue({
     el: '#app',
     data: {
-        message: 'Loading voertuigen...',
+        loading: 'loading',
         voertuigen: null,
         currentVoertuig: null,
         carrosserietypes: null,
@@ -21,14 +28,24 @@ var app = new Vue({
         sortinfo: null,
         IsSort: false,
         count: -1,
+        IsResponsive: false,
+        tableTitle: "Voertuigen",
     },
-    updated: function () {
+    updated() {
         if (self.IsEdit) {
             $('.selectpicker').selectpicker('refresh');
             self.fetchFotos();
+            this.inputcurreny();
+        } else {
+            self.tableTitle = "Voertuigen";
         }
     },
-    created: function () {
+    beforeCreate: function Authenticate() {
+        if (localStorage.getItem("accessToken") == null) {
+            window.location.pathname = "/home/login";
+        }
+    },
+    created() {
         self = this
         this.fetchvoertuig();
         this.fetchcarrosserietypes();
@@ -36,14 +53,33 @@ var app = new Vue({
         this.fetchUitrustingen();
         this.fetchFotos();
     },
+    computed: {
+
+    },
+    mounted() {
+        this.$nextTick(function () {
+            window.addEventListener('resize', this.responsive);
+            this.responsive();
+        })
+    },
     methods: {
+        Logoff: function () {
+            localStorage.removeItem("accessToken");
+            window.location.pathname = "/home/login";
+        },
         fetchvoertuig: function () {
             self = this
             fetch(`${apiURL}voertuigen`)
                 .then(res => res.json())
-                .then(function (voertuigen) {
-                    self.voertuigen = voertuigen;
-                    self.message = ""
+                .then(function (res) {
+                    for (var i = 0; i < res.length; i++) {
+                        res[i].Prijs = res[i].Prijs.toLocaleString("de-DE");
+                        var d = new Date(res[i].Bouwjaar);
+                        if (res[i].Bouwjaar)
+                            res[i].Bouwjaar = ("0" + (d.getMonth() + 1)).slice(-2) + "-" + d.getFullYear();
+                    }
+                    self.voertuigen = res;
+                    self.loading = ""
                 }).catch(err => console.error('Fout: ' + err));
         },
         fetchVoertuigDetails: function (voertuig) {
@@ -51,34 +87,17 @@ var app = new Vue({
             fetch(`${apiURL}voertuigen/${voertuig.Id}`)
                 .then(res => res.json())
                 .then(function (res) {
+                    var date = new Date(res.Bouwjaar);
+                    var month = ("0" + (date.getMonth() + 1)).slice(-2);
+                    res.Bouwjaar = `${date.getFullYear()}-${month}`;
+
                     self.currentVoertuig = res;
-                    //self.Ischecked = [];
-                    //var uitrustingenIds = [];
-                    //var currentUitrustingIds = [];
                     self.voertuigUitrusting = [];
                     if (self.currentVoertuig.VoertuigUitrusting != 0 && self.currentVoertuig.VoertuigUitrusting != null) {
                         for (var i = 0; i < self.currentVoertuig.VoertuigUitrusting.length; i++) {
                             self.voertuigUitrusting[i] = self.currentVoertuig.VoertuigUitrusting[i].UitrustingId;
                         }
                     }
-                    self.newUitrusting = [];
-                    self.count = -1;
-                    self.newUitrusting.push({ UitrustingId: 0 });
-
-                    //for (var i = 0; i < self.currentVoertuig.VoertuigUitrusting.length; i++) {
-                    //    currentUitrustingIds.push("" + self.currentVoertuig.VoertuigUitrusting[i].UitrustingId)
-                    //}
-                    //for (var i = 0; i < self.uitrustingen.length; i++) {
-                    //    uitrustingenIds.push("" + self.uitrustingen[i].Id)
-                    //}
-
-                    //for (var i = 0; i < uitrustingenIds.length; i++) {
-                    //    if (currentUitrustingIds.indexOf(uitrustingenIds[i]) !== -1) {
-                    //        self.Ischecked.push(i);
-                    //    } else
-                    //        self.Ischecked.push(false);
-                    //}
-
                 }).catch(err => console.error('Fout: ' + err));
         },
         fetchcarrosserietypes: function () {
@@ -105,6 +124,9 @@ var app = new Vue({
                     self.uitrustingen = res;
                 }).catch(err => console.error('Fout: ' + err));
         },
+        filterUitrustingen: function (CatId) {
+            return this.uitrustingen.filter(u => u.Categorie === CatId);
+        },
         onFileChange(e) {
             var files = e.target.files || e.dataTransfer.files;
             if (!files.length)
@@ -130,7 +152,7 @@ var app = new Vue({
 
             $('#files-upload').fileinput('destroy')
                 .fileinput({
-                    theme: "explorer",
+                    theme: "explorer-fa",
                     language: "nl",
                     showUpload: false,
                     fileActionSettings: { 'showUpload': false },
@@ -185,7 +207,20 @@ var app = new Vue({
                 fetch(`${apiURL}voertuigen/ChangeFileName`, ajaxConfig);
             }
         },
-
+        filteredItems(column, catId) {
+            //console.log("Wordt opgeroepen bij elke currentvoertuig element");
+            const self = this;
+            var uitrusting = self.uitrustingen.filter(u => u.Categorie === catId);
+            const total = uitrusting.length;
+            const gap = Math.ceil(total / 2);
+            let top = (gap * column);
+            const bottom = ((top - gap));
+            top -= 1;
+            return uitrusting.filter(item =>
+                uitrusting.indexOf(item) >= bottom
+                && uitrusting.indexOf(item) <= top,
+            ); // Return the items for the given col
+        },
         changeUitrustingen: function (u) {
             console.log(u);
             u.Add = true;
@@ -227,11 +262,19 @@ var app = new Vue({
             self = this;
             self.IsNewVoertuig = IsNewVoertuig;
             self.IsEdit = true;
+
+            self.newUitrusting = [];
+            self.count = -1;
+            self.newUitrusting.push({ UitrustingId: 0 });
+
             if (!IsNewVoertuig) {
                 self.fetchVoertuigDetails(voertuig)
+                self.tableTitle = "Voertuig bewerken";
             }
             else {
                 voertuig: null;
+                self.tableTitle = "Voertuig toevoegen";
+                self.voertuigUitrusting = [];
                 self.currentVoertuig = {
                     Id: 1, MerkId: 1, CarrosserietypeId: 1,
                 };
@@ -241,6 +284,8 @@ var app = new Vue({
             var self = this
             var ajaxHeader = new Headers();
             ajaxHeader.append("Content-Type", "application/json")
+            ajaxHeader.append("Authorization", "Bearer " + localStorage.getItem("accessToken"))
+
             self.addUitrustingenToVoertuig();
             var ajaxConfig = {
                 method: 'PUT',
@@ -281,8 +326,8 @@ var app = new Vue({
                         theVoertuig = self.voertuigen.filter(voertuig => (voertuig.Id === self.currentVoertuig.Id))[0];
                         theVoertuig.MerkNaam = themerken.Naam;
                         theVoertuig.Model = self.currentVoertuig.Model;
-                        theVoertuig.Bouwjaar = self.currentVoertuig.Bouwjaar;
-                        theVoertuig.Vermogen = self.currentVoertuig.Vermogen;
+                        theVoertuig.BouwjaarShort = res.BouwjaarShort;
+                        theVoertuig.Prijs = res.Prijs.toLocaleString("de-DE");
                     } else {
                         self.currentVoertuig.Id = res.Id;
                         self.voertuigen.push(self.currentVoertuig);
@@ -294,6 +339,7 @@ var app = new Vue({
 
             var hr = new XMLHttpRequest();
             hr.open(`DELETE`, `${apiURL}voertuigen/${currentVoertuig.Id}`);
+            hr.setRequestHeader('Authorization', 'Bearer ' + localStorage.getItem('accessToken'))
             hr.send();
 
             this.voertuigen.forEach(function (voertuig, i) {
@@ -303,6 +349,34 @@ var app = new Vue({
                 }
             })
         },
+        responsive() {
+            console.log(document.documentElement.clientWidth);
+            var w = document.documentElement.clientWidth;
+            if (w > 751) {
+                self.IsResponsive = true;
+            } else {
+                self.IsResponsive = false;
+            }
+        },
+        //inputcurreny() {
+        //    var input = document.getElementById("Prijs");
+        //    input.addEventListener("keyup", function (event) {
+        //        var selection = window.getSelection().toString();
+        //        if (selection !== '') {
+        //            return;
+        //        }
+        //        // 2.
+        //        if ($.inArray(event.keyCode, [38, 40, 37, 39]) !== -1) {
+        //            return;
+        //        }
+        //        var num = parseInt(input.value);
+        //        if (isNaN(num) == false)
+        //         input.value = num.toLocaleString('de-DE');
+        //        console.log(num.toLocaleString('de-DE'))
+        //    })
+
+        //},
     }
 
 });
+

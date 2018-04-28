@@ -13,7 +13,7 @@ namespace HenrikMotors.Controllers
             return View();
         }
 
-        public ActionResult About()
+        public ActionResult Voertuigen()
         {
             ViewBag.Message = "Your application description page.";
 
@@ -23,6 +23,12 @@ namespace HenrikMotors.Controllers
         public ActionResult Contact()
         {
             ViewBag.Message = "Your contact page.";
+
+            return View();
+        }
+        public ActionResult Login()
+        {
+            ViewBag.Message = "Your login page.";
 
             return View();
         }

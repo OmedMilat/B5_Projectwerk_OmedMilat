@@ -10,7 +10,6 @@ namespace HenrikMotors.Models
     [Table("Voertuigen")]
     public class Voertuig
     {
-
         public int Id { get; set; }
         [NotMapped]
         private string artikelNummer;
@@ -20,21 +19,16 @@ namespace HenrikMotors.Models
             set {}
         }
         public string Model { get; set; }
-        //public string LijstFotosString
-        //{
-        //    get { return string.Join(",", LijstFotos); }
-        //    set { LijstFotos = value.Split(',').ToList(); }
-        //}
-        //[NotMapped]
-        //public List<string> LijstFotos { get { return Merk + Model + Id.ToString(); } set { } }
-
+        public decimal Prijs { get; set; }
         public string LijstFotos { get; set; }
+        [DisplayFormat(DataFormatString = "{Y}", ApplyFormatInEditMode = true)]
         public DateTime? Bouwjaar { get; set; }
+        public int Kilometerstand { get; set; }
         public string Kleur { get; set; }
         public string Vermogen { get; set; }
         public string Brandstof { get; set; }
         public string Deuren { get; set; }
-        public string Plaatsen { get; set; }
+        public string Zitplaatsen { get; set; }
         public string Transmissie { get; set; }
         public string Versnellingen { get; set; }
         public string Cilinders { get; set; }
@@ -54,6 +48,7 @@ namespace HenrikMotors.Models
     {
         public int Id { get; set; }
         public string Naam { get; set; }
+        public int Categorie { get; set; }
         public virtual ICollection<VoertuigUitrusting> VoertuigUitrusting { get; set; }
     }
     [Table("VoertuigUitrusting")]

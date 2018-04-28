@@ -49,6 +49,7 @@ namespace HenrikMotors.Areas.Admin.Controllers
         }
 
         // PUT: api/Voertuigen/5
+        [Authorize]
         [ResponseType(typeof(void))]
         public async Task<IHttpActionResult> PutVoertuig(int id, VoertuigDetailDTO voertuigDetailDTO)
         {
@@ -88,6 +89,7 @@ namespace HenrikMotors.Areas.Admin.Controllers
         }
 
         // POST: api/Voertuigen
+        [Authorize]
         [Route("api/voertuigen/PostVoertuig")]
         [ResponseType(typeof(Voertuig))]
         public async Task<IHttpActionResult> PostVoertuig(VoertuigDetailDTO voertuigDetailDTO)
@@ -101,14 +103,21 @@ namespace HenrikMotors.Areas.Admin.Controllers
                 await NewCategorie(voertuigDetailDTO);
             }
             Voertuig voertuig = Mapper.Map<Voertuig>(voertuigDetailDTO);
-            await ChangeUitrusting(voertuig, voertuigDetailDTO.VoertuigUitrusting);
+            voertuig.VoertuigUitrusting = null;
             db.Voertuigen.Add(voertuig);
             await db.SaveChangesAsync();
+
             voertuigDetailDTO.Id = voertuig.Id;
+            voertuigDetailDTO.ArtikelNummer = voertuig.ArtikelNummer;
             currentId = voertuig.Id;
+
+            var voertuigcopy = Mapper.Map<Voertuig>(voertuigDetailDTO);
+            voertuigcopy.Id = voertuig.Id;
+            await ChangeUitrusting(voertuigcopy, voertuigDetailDTO.VoertuigUitrusting);
+            await db.SaveChangesAsync();
+
             return Ok(voertuigDetailDTO);
         }
-
         [Route("api/voertuigen/PostFile/{length}")]
         public async Task<HttpResponseMessage> PostFile(int length)
         {
@@ -142,6 +151,7 @@ namespace HenrikMotors.Areas.Admin.Controllers
         }
 
         // DELETE: api/Voertuigen/5
+        [Authorize]
         [ResponseType(typeof(Voertuig))]
         public async Task<IHttpActionResult> DeleteVoertuig(int id)
         {
@@ -265,14 +275,18 @@ namespace HenrikMotors.Areas.Admin.Controllers
                 if (CurrentUitr.UitrustingId <= 0)
                 {
                     CurrentUitr = await NewUitrusting(voertuigUitrustingDTO.
-                        First(nu => nu.UitrustingId == CurrentUitr.UitrustingId));
+                        First(nu => nu.UitrustingId == CurrentUitr.UitrustingId),voertuig.Id);
                 }
                 var ExistsInDb = db.VoertuigUitrusting.FirstOrDefault(vu => vu.UitrustingId == CurrentUitr.UitrustingId
                 && vu.VoertuigId == voertuig.Id);
                 if (ExistsInDb != null)
                     UitrustingCompare.Add(ExistsInDb);
                 if (ExistsInDb?.UitrustingId == null)
+                {
+                    CurrentUitr.VoertuigId = voertuig.Id;
                     db.VoertuigUitrusting.Add(CurrentUitr);
+                    UitrustingCompare.Add(CurrentUitr);
+                }
             }
 
             //Verwijderen
@@ -285,17 +299,19 @@ namespace HenrikMotors.Areas.Admin.Controllers
                 }
             }
         }
-        async Task<VoertuigUitrusting> NewUitrusting(VoertuigUitrustingDTO voertuigUitrustingDTO)
+        async Task<VoertuigUitrusting> NewUitrusting(VoertuigUitrustingDTO voertuigUitrustingDTO, int id)
         {
             Uitrusting uitrusting = new Uitrusting
             {
                 Id = 1,
-                Naam = voertuigUitrustingDTO.UitrustingNaam
+                Naam = voertuigUitrustingDTO.UitrustingNaam,
+                Categorie = 4
             };
             db.Uitrustingen.Add(uitrusting);
             await db.SaveChangesAsync();
             voertuigUitrustingDTO.UitrustingId = uitrusting.Id;
             voertuigUitrustingDTO.UitrustingNaam = uitrusting.Naam;
+            //voertuigUitrustingDTO.VoertuigId = id;
             var voertuigUitrusting = Mapper.Map<VoertuigUitrusting>(voertuigUitrustingDTO);
             return voertuigUitrusting;
         }

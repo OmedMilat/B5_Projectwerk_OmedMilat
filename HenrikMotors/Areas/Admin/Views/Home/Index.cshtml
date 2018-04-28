@@ -2,151 +2,240 @@
     ViewBag.Title = "Voertuig";
 }
 
-<article id="app">  
-    <div class="col-xs-12">
-        <div class="tableheader col-xs-12">
-            <h1 class="tabletitle">Voertuigen bewerken</h1>
-            <a class="tablebutton btn btn-success" v-if="!IsEdit" v-on:click="EditMode(voertuig,true)">
-                <i class="glyphicon glyphicon-plus-sign" title="toevoegen"></i>
-                <span class="plusicon">Voertuig Toevoegen</span>
-            </a>
-            <a class="tablebutton btn btn-warning" v-if="IsEdit" v-on:click="IsEdit = !IsEdit">
-                <i class="glyphicon glyphicon-ban-circle" title="annuleren"></i>
-                <span class="plusicon">Annuleren</span>
-            </a>
-        </div>
-        <table class="table table-hover" v-if="!IsEdit">
-            <thead>
-                <tr>
-                    <th>#</th>
-                    <th>Foto</th>
-                    <th>Merk</th>
-                    <th>Model</th>
-                    <th>Bouwjaar</th>
-                    <th>Vermogen</th>
-                    <th>Acties</th>
-                </tr>
-            </thead>
-            <tbody>
-                <tr v-for="voertuig in voertuigen">
-                    <th scope="row">{{voertuig.Id}}</th>
-                    <td><img style="width:150px" :src="'/Content/images/Voertuig'+voertuig.Id+'/1_'+voertuig.ArtikelNummer+'.png'" /></td>
-                    <td>{{voertuig.MerkNaam}}</td>
-                    <td>{{voertuig.Model}}</td>
-                    <td>2018</td>
-                    <td>{{voertuig.Vermogen}}</td>
-                    <td>
-                        <a class="edit" v-on:click="EditMode(voertuig,false); "><i class="glyphicon glyphicon-cog" title="bewerken"></i></a>
-                        <a class="remove" v-on:click="Delete(voertuig)"><i class="glyphicon glyphicon-trash" title="verwijderen"></i></a>
-                    </td>
-                </tr>
-            </tbody>
-        </table><h1 style="text-align:center">{{message}}</h1>
-    </div>
-    @*Edit Mode*@
-    <article id="Edit" class="row" v-if="IsEdit">
-        <div class="col-sm-6 col-md-3">
-            @*<div v-for="fotos in currentVoertuig.FotoNaam">
-                <span>{{fotos}}.png</span>
-                <img style="width:150px" v-bind:src="'/Content/images/voertuig128/' + fotos+'.png'" />
-            </div>*@
+<main id="app" v-cloak>
+        <section>
+          
+            <router-view></router-view>
+            @*<a class="btn btn-danger" v-if="!IsEdit" v-on:click="Logoff">
+                    <i class="fa fa-off" title="LoggOff"></i>
+                    <span class="iconbutton">Afmelden</span>
+                </a>
+            <div class="tableheader">
+                <h1 class="tabletitle">{{tableTitle}}</h1>
+                <a class="tablebutton btn btn-success" v-if="!IsEdit" v-on:click="EditMode(voertuig,true)">
+                    <i class="fa fa-plus-circle" title="toevoegen"></i>
+                    <span class="iconbutton">Voertuig Toevoegen</span>
+                </a>
+                <a class="tablebutton btn btn-success" v-if="IsEdit" v-on:click="save">
+                    <i class="fa fa-floppy-o" title="opslaan"></i>
+                    <span class="iconbutton">Opslaan</span>
+                </a>
+                <a class="tablebutton btn btn-warning " v-if="IsEdit" v-on:click="IsEdit = !IsEdit">
+                    <i class="fa fa-ban" title="annuleren"></i>
+                    <span class="iconbutton">Annuleren</span>
+                </a>
+            </div>
+            <table v-bind:class="{'table table-hover': IsResponsive}" v-if="!IsEdit">
+                <thead>
+                    <tr>
+                        <th>#</th>
+                        <th>Foto</th>
+                        <th>Merk</th>
+                        <th>Model</th>
+                        <th>Bouwjaar</th>
+                        <th>Vermogen</th>
+                        <th>Acties</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr v-for="voertuig in voertuigen" class="tableRow">
+                        <th scope="row" class="artikelNr">{{voertuig.ArtikelNummer}}</th>
+                        <td class="TableFoto"><img :src="'/Content/images/Voertuig'+voertuig.Id+'/1_'+voertuig.ArtikelNummer+'.png'" /></td>
+                        <td data-title="Merk:">{{voertuig.MerkNaam}}</td>
+                        <td data-title="Model:">{{voertuig.Model}}</td>
+                        <td data-title="Bouwjaar:">{{voertuig.BouwjaarShort}}</td>
+                        <td data-title="Prijs:">€ {{voertuig.Prijs}}</td>
+                        <td class="tableIcons">
+                            <a class="edit" v-on:click="EditMode(voertuig,false) "><i class="fa fa-cog" title="bewerken"></i></a>
+                            <a class="remove" v-on:click="Delete(voertuig)"><i class="fa fa-trash-o" title="verwijderen"></i></a>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>*@
             
-            <div class="form-group">
-                <label for="Merk">Merk:</label>
-                <select v-model="currentVoertuig.MerkId" ref="select"  class="form-control selectpicker" data-live-search="true">
-                    <option data-content="<span class='selectOption'><i class='glyphicon glyphicon-plus-sign'></i><span class='selectIcon''>Nieuw Merk</span></span>">0</option>
-                    <option v-for="Merk in merken" v-bind:value="Merk.Id" id="Merk">
-                        {{Merk.Naam}}
-                    </option>
-                </select>
-                <input v-if="currentVoertuig.MerkId == 0" v-model="currentVoertuig.MerkNaam" placeholder="Typ hier uw nieuw merk in." 
-                       class="form-control" />
-            </div>
             
-            <div class="form-group">
-                <label for="Model">Model:</label>
-                <input v-model="currentVoertuig.Model" class="form-control" id="Model">
-            </div>
-            <div class="form-group">
-                <label for="Kleur">Kleur:</label>
-                <input v-model="currentVoertuig.Kleur" class="form-control" id="Kleur">
-            </div>
-            <div class="form-group">
-                <label for="Bouwjaar">Bouwjaar:</label>
-                <input v-model="currentVoertuig.Bouwjaar" class="form-control" id="Bouwjaar">
-            </div>
-            <div class="form-group">
-                <label for="Ctype">Carrosserietype:</label>
-                <select v-model="currentVoertuig.CarrosserietypeId" ref="select" class="form-control selectpicker" data-live-search="true">
-                    <option data-content="<span class='selectOption'><i class='glyphicon glyphicon-plus-sign'></i><span class='selectIcon''>Nieuw Type</span></span>">0</option>
-                    <option v-for="Type in carrosserietypes" v-bind:value="Type.Id" id="Ctype">{{Type.Naam}}</option>
-                </select>
-                <input v-if="currentVoertuig.CarrosserietypeId == 0" v-model="currentVoertuig.CarrosserietypeNaam" placeholder="Typ hier uw nieuw type in."
-                       class="form-control" />
-            </div>
-            <div class="form-group">
-                <label for="Deuren">Deuren:</label>
-                <input v-model="currentVoertuig.Deuren" class="form-control" id="Deuren">
-            </div>
-            <div class="form-group">
-                <label for="Plaatsen">Plaatsen:</label>
-                <input v-model="currentVoertuig.Plaatsen" class="form-control" id="Plaatsen">
-            </div>
-        </div>
-        <div class="col-sm-6 col-md-7 ">
-            <div class="form-group">
-                <label for="Aandrijving">Aandrijving:</label>
-                <input v-model="currentVoertuig.Aandrijving" class="form-control" id="Aandrijving">
-            </div>
-            <div class="form-group">
-                <label for="Vermogen">Vermogen:</label>
-                <input v-model="currentVoertuig.Vermogen" class="form-control" id="Vermogen">
-            </div>
-            <div class="form-group">
-                <label for="Brandstof">Brandstof:</label>
-                <input v-model="currentVoertuig.Brandstof" class="form-control" id="Brandstof">
-            </div>
-            <div class="form-group">
-                <label for="Transmissie">Transmissie:</label>
-                <input v-model="currentVoertuig.Transmissie" class="form-control" id="Transmissie">
-            </div>
-            <div class="form-group">
-                <label for="Cilinders">Cilinders:</label>
-                <input v-model="currentVoertuig.Cilinders" class="form-control" id="Cilinders">
-            </div>
-            <div class="form-group">
-                <label>Uitrusting:</label>
-                <div v-for="(Uitrusting,index) in uitrustingen">
-                    <input type="checkbox" v-model="voertuigUitrusting" :value="Uitrusting.Id"  
-                           class="form-check" :id="Uitrusting.Naam">
-                    <label :for="Uitrusting.Naam">{{Uitrusting.Naam}}</label>
+            @*<div :class="loading"></div>*@
+        </section>
+        @*Edit Mode*@
+        @*<section id="Edit" v-if="IsEdit" class="row">
+            <div class="col-md-6 col-xl-3">
+                <div class="form-group">
+                    <label for="Merk" class="select-label">Merk:</label>
+                    <select v-model="currentVoertuig.MerkId" ref="select" class="form-control selectpicker" data-live-search="true">
+                        <option data-content="<span class='selectOption'><i class='fa fa-plus-circle'></i><span class='selectIcon''>Nieuw Merk</span></span>">0</option>
+                        <option v-for="Merk in merken" v-bind:value="Merk.Id" id="Merk">
+                            {{Merk.Naam}}
+                        </option>
+                    </select>
+                    <input v-if="currentVoertuig.MerkId == 0" v-model="currentVoertuig.MerkNaam" placeholder="Typ hier uw nieuw merk in."
+                           class="form-control" />
                 </div>
-                <div v-for="(uit,i) in newUitrusting">
-                    <input type="checkbox" v-model="uit.Add"  />
-                    <input id="newuit" v-on:input="changeUitrustingen(uit)" v-model="uit.UitrustingNaam" />
+                <div class="form-group">
+                    <label for="Model">Model:</label>
+                    <input v-model="currentVoertuig.Model" class="form-control" id="Model">
+                </div>
+                <div class="form-group">
+                    <label for="Prijs">Prijs:</label>
+                    <div class="input-group">
+                        <div class="input-group-prepend">
+                            <span class="input-group-text">€</span>
+                        </div>
+                        <input v-model="currentVoertuig.Prijs" type="number" inputmode="numeric" class="form-control" step="0,01" id="Prijs">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="Kleur">Kleur:</label>
+                    <input v-model="currentVoertuig.Kleur" class="form-control" id="Kleur">
+                </div>
+                <div class="form-group">
+                    <label for="Bouwjaar">Bouwjaar:</label>
+                    <input v-model="currentVoertuig.Bouwjaar" type="month" lang="nl-be" class="form-control" id="Bouwjaar">
+                </div>
+                <div class="form-group">
+                    <label for="Ctype" class="select-label">Carrosserietype:</label>
+                    <select v-model="currentVoertuig.CarrosserietypeId" ref="select" class="form-control selectpicker" data-live-search="true">
+                        <option data-content="<span class='selectOption'><i class='fa fa-plus-circle'></i><span class='selectIcon''>Nieuw Type</span></span>">0</option>
+                        <option v-for="Type in carrosserietypes" v-bind:value="Type.Id" id="Ctype">{{Type.Naam}}</option>
+                    </select>
+                    <input v-if="currentVoertuig.CarrosserietypeId == 0" v-model="currentVoertuig.CarrosserietypeNaam" placeholder="Typ hier uw nieuw type in."
+                           class="form-control" />
+                </div>
+                <div class="form-group">
+                    <label for="Deuren">Deuren:</label>
+                    <input v-model="currentVoertuig.Deuren" class="form-control" id="Deuren">
+                </div>
+                <div class="form-group">
+                    <label for="Plaatsen">Zitplaatsen:</label>
+                    <input v-model="currentVoertuig.Plaatsen" class="form-control" id="Plaatsen">
+                </div>
+
+            </div>
+            <div class="col-md-6 col-xl-3">
+                <div class="form-group">
+                    <label for="Kilometerstand">Kilometerstand:</label>
+                    <input v-model="currentVoertuig.Kilometerstand" type="number" inputmode="numeric" class="form-control" id="Kilometerstand">
+                </div>
+                <div class="form-group">
+                    <label for="Transmissie">Transmissie:</label>
+                    <input v-model="currentVoertuig.Transmissie" class="form-control" id="Transmissie">
+                </div>
+                <div class="form-group">
+                    <label for="Cilinders">Cilinders:</label>
+                    <input v-model="currentVoertuig.Cilinders" class="form-control" id="Cilinders">
+                </div>
+                <div class="form-group">
+                    <label for="Aandrijving">Aandrijving:</label>
+                    <input v-model="currentVoertuig.Aandrijving" class="form-control" id="Aandrijving">
+                </div>
+                <div class="form-group">
+                    <label for="Vermogen">Vermogen:</label>
+                    <input v-model="currentVoertuig.Vermogen" class="form-control" id="Vermogen">
+                </div>
+                <div class="form-group">
+                    <label for="Brandstof">Brandstof:</label>
+                    <input v-model="currentVoertuig.Brandstof" class="form-control" id="Brandstof">
+                </div>
+                <div class="form-group">
+                    <label for="Beschrijving">Beschrijving:</label>
+                    <textarea id="beschrijving" class="form-control" rows="4"></textarea>
                 </div>
             </div>
-            <div class="file-loading">
-                <label for="file">Foto uploaden:</label>
-                <input v-on:change="onFileChange" name="fotos[]" multiple id="files-upload" type="file">
+            <div class="col-md-12 col-xl-6">
+                <div class="file-loading">
+                    <label for="file">Foto uploaden:</label>
+                    <input v-on:change="onFileChange" name="fotos[]" multiple id="files-upload" type="file">
+                </div>
+
             </div>
-            <div>
+            <div id="uitrustingen" class="row col-lg-12">
+                <h3 class="col-12">Uitrusting:</h3>
+                <div id="Veiligheid" class="col-md-6 col-xl-3">
+                    <h5>Veiligheid</h5>
+                    <div class="column1">
+                        <label v-for="Uitrusting in filteredItems(1,1)" class="custom-control custom-checkbox">
+                            <input type="checkbox" v-model="voertuigUitrusting" :value="Uitrusting.Id"
+                                   class="custom-control-input" :id="Uitrusting.Naam">
+                            <span class="custom-control-label">{{Uitrusting.Naam}}</span>
+                        </label>
+                    </div>
+                    <div class="column2">
+                        <label v-for="Uitrusting in filteredItems(2,1)" class=" custom-control custom-checkbox">
+                            <input type="checkbox" v-model="voertuigUitrusting" :value="Uitrusting.Id"
+                                   class="custom-control-input" :id="Uitrusting.Naam">
+                            <span class="custom-control-label">{{Uitrusting.Naam}}</span>
+                        </label>
+                    </div>
+                </div>
+                <div id="Comfort" class="col-md-6 col-xl-3">
+                    <h5>Comfort</h5>
+                    <div class="column1">
+                        <label v-for="Uitrusting in filteredItems(1,2)" class="custom-control custom-checkbox">
+                            <input type="checkbox" v-model="voertuigUitrusting" :value="Uitrusting.Id"
+                                   class="custom-control-input" :id="Uitrusting.Naam">
+                            <span class="custom-control-label">{{Uitrusting.Naam}}</span>
+                        </label>
+                    </div>
+                    <div class="column2">
+                        <label v-for="Uitrusting in filteredItems(2,2)" class=" custom-control custom-checkbox">
+                            <input type="checkbox" v-model="voertuigUitrusting" :value="Uitrusting.Id"
+                                   class="custom-control-input" :id="Uitrusting.Naam">
+                            <span class="custom-control-label">{{Uitrusting.Naam}}</span>
+                        </label>
+                    </div>
+                </div>
+                <div id="MultiMedia" class="col-md-6 col-xl-3">
+                    <h5>MultiMedia</h5>
+                    <div class="column1">
+                        <label v-for="Uitrusting in filteredItems(1,3)" class="custom-control custom-checkbox">
+                            <input type="checkbox" v-model="voertuigUitrusting" :value="Uitrusting.Id"
+                                   class="custom-control-input" :id="Uitrusting.Naam">
+                            <span class="custom-control-label">{{Uitrusting.Naam}}</span>
+                        </label>
+                    </div>
+                    <div class="column2">
+                        <label v-for="Uitrusting in filteredItems(2,3)" class=" custom-control custom-checkbox">
+                            <input type="checkbox" v-model="voertuigUitrusting" :value="Uitrusting.Id"
+                                   class="custom-control-input" :id="Uitrusting.Naam">
+                            <span class="custom-control-label">{{Uitrusting.Naam}}</span>
+                        </label>
+                    </div>
+                </div>
+                <div id="Extra opties" class="col-md-6 col-xl-3">
+                    <h5>Extra opties</h5>
+                    <div class="column1">
+                        <label v-for="Uitrusting in filteredItems(1,4)" class="custom-control custom-checkbox">
+                            <input type="checkbox" v-model="voertuigUitrusting" :value="Uitrusting.Id"
+                                   class="custom-control-input" :id="Uitrusting.Naam">
+                            <span class="custom-control-label">{{Uitrusting.Naam}}</span>
+                        </label>
+                    </div>
+                    <div class="column2">
+                        <label v-for="Uitrusting in filteredItems(2,4)" class=" custom-control custom-checkbox">
+                            <input type="checkbox" v-model="voertuigUitrusting" :value="Uitrusting.Id"
+                                   class="custom-control-input" :id="Uitrusting.Naam">
+                            <span class="custom-control-label">{{Uitrusting.Naam}}</span>
+                        </label>
+                    </div>
+                    <div v-for="(uit,i) in newUitrusting">
+                        <input type="checkbox" v-model="uit.Add" />
+                        <input id="newuit" v-on:input="changeUitrustingen(uit)" v-model="uit.UitrustingNaam" />
+                    </div>
+                </div>
+
+            </div>
+            <div class="col-12 editbuttons">
                 <a class="btn btn-warning" v-if="IsEdit" v-on:click="IsEdit = !IsEdit">
-                    <i class="glyphicon glyphicon-ban-circle" title="annuleren"></i>
-                    <span class="plusicon">Annuleren</span>
+                    <i class="fa fa-ban" title="annuleren"></i>
+                    <span class="iconbutton">Annuleren</span>
                 </a>
                 <a class="btn btn-success" v-on:click="save">
-                    <i class="glyphicon glyphicon-floppy-disk" title="opslaan"></i>
-                    <span class="plusicon">Opsaan</span>
+                    <i class="fa fa-floppy-o" title="opslaan"></i>
+                    <span class="iconbutton">Opsaan</span>
                 </a>
             </div>
-        </div>
-    </article>
-</article>
+        </section>*@
+</main>
 
-
-
-@section scripts{
-@Styles.Render("~/bundles/AdminSectionCss")
-@Scripts.Render("~/bundles/AdminSectionScripts"); 
+@section Scripts{
+    @Scripts.Render("~/Scripts/bundle/Home.js")
 }

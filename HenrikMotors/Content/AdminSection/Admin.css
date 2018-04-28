@@ -1,5 +1,69 @@
 ﻿/*#region CRUD pagina*/
 
+/*#region loading animatie*/
+[v-cloak] > * {
+    display: none;
+}
+
+[v-cloak]::before {
+    display: block;
+    content: " ";
+    width: 40px;
+    height: 40px;
+    margin: 100px auto;
+    background-color: #f54c47;
+    border-radius: 100%;
+    -webkit-animation: sk-scaleout 0.7s infinite ease-in-out;
+    animation: sk-scaleout 0.7s infinite ease-in-out;
+}
+
+.loading {
+    display: block;
+    content: " ";
+    width: 40px;
+    height: 40px;
+    margin: 100px auto;
+    background-color: #f54c47;
+    border-radius: 100%;
+    -webkit-animation: sk-scaleout 0.7s infinite ease-in-out;
+    animation: sk-scaleout 0.7s infinite ease-in-out;
+}
+
+@-webkit-keyframes sk-scaleout {
+    0% {
+        -webkit-transform: scale(0)
+    }
+
+    100% {
+        -webkit-transform: scale(1.0);
+        opacity: 0;
+    }
+}
+
+@keyframes sk-scaleout {
+    0% {
+        -webkit-transform: scale(0);
+        transform: scale(0);
+    }
+
+    100% {
+        -webkit-transform: scale(1.0);
+        transform: scale(1.0);
+        opacity: 0;
+    }
+}
+/*#endregion loading animatie*/
+
+/*#region Table*/
+.TableFoto {
+    width: 20%;
+}
+
+    .TableFoto > img {
+        border-radius: 3%;
+        max-width: 150px;
+        max-height: 150px;
+    }
 /*Table header*/
 .tableheader {
     border-radius: 3px;
@@ -16,15 +80,17 @@
 
 .tablebutton {
     float: right;
+    margin-left: 10px;
 }
 
-.plusicon {
+.iconbutton {
     padding-right: 7px;
 }
+
 /*Table icons*/
 .edit {
     color: gray;
-    font-size: 18pt;
+    font-size: 20pt;
     cursor: pointer;
     margin-right: 0.7vw;
 }
@@ -35,7 +101,7 @@
 
 .remove {
     color: red;
-    font-size: 18pt;
+    font-size: 20pt;
     cursor: pointer;
 }
 
@@ -43,17 +109,202 @@
         color: darkred;
     }
 
+
+
+/*Mobile "Table"*/
+@media only screen and (max-width: 768px), (min-device-width: 768px) and (max-device-width: 1024px) {
+    /*Source: https://css-tricks.com/responsive-data-tables */
+
+    /* Force table to not be like tables anymore */
+    table, thead, tbody, th, td, tr {
+        display: block;
+    }
+
+        /* Hide table headers (but not display: none;, for accessibility) */
+        thead tr {
+            position: absolute;
+            top: -9999px;
+            left: -9999px;
+        }
+
+    tr {
+        border: 1px solid #ccc;
+    }
+
+    td {
+        /* Behave  like a "row" */
+        border: none;
+        border-bottom: 1px solid #eee;
+        position: relative;
+        padding-left: 50%;
+    }
+
+        td:before {
+            /* Now like a table header */
+            position: absolute;
+            /* Top/left values mimic padding */
+            left: 6px;
+            width: 45%;
+            padding-right: 10px;
+            white-space: nowrap;
+        }
+
+        /*
+	Label the data
+	*/
+        td:before {
+            font-weight: bold;
+            content: attr(data-title);
+            margin-left: 0.5vw;
+        }
+    /*td:nth-child(even) {
+        background-color: #f8f6ff;
+    }*/
+
+
+
+    .tableheader {
+        margin-top: 0;
+        padding: 7px;
+        padding-bottom: 5px;
+    }
+
+    .tableRow {
+        border-radius: 6px;
+        margin-bottom: 5px;
+        box-shadow: 0px 0px 4px -1px rgba(0,0,0,0.75);
+    }
+
+    .TableFoto {
+        text-align: center;
+        display: block;
+        padding: 0px 0px;
+        width: unset;
+        padding-bottom: 7px;
+    }
+
+        .TableFoto > img {
+            border-radius: 3%;
+            max-width: 210px;
+            max-height: 150px;
+        }
+
+    .artikelNr {
+        text-align: center;
+    }
+
+    .tabletitle {
+        text-align: center;
+        display: block;
+    }
+
+
+    .tablebutton {
+        float: none;
+        display: block;
+        margin-bottom: 5px;
+    }
+
+    .edit, .remove {
+        font-size: 23pt;
+    }
+
+    .edit {
+        margin-right: 5.3vw;
+        margin-left: 15vw;
+    }
+
+    .tableIcons {
+        padding-top: 1vh;
+    }
+}
+/*#endregion Table*/
+
+/*#region edit pagina*/
+#Edit {
+    padding-top: 1em;
+    margin-right: 0;
+    margin-left: 0;
+}
+.editbuttons {
+    text-align: right;
+    margin-top: 2em;
+}
 /*Select Option*/
 .selectOption {
     background-color: #5cb85c;
     padding: 3px;
-    width: 118%;
+    width: 12vw;
     display: block;
     text-align: center;
     color: white;
-    margin-left: -20px;
 }
+
 .selectIcon {
     margin-left: 5px
 }
-/*#endregion*/
+
+.select-label {
+    display: block;
+}
+
+/*Foto preview*/
+.file-preview {
+    max-height: 38.7em;
+    overflow: auto;
+}
+.file-caption > input, .file-input > .input-group{
+    max-width: 100%;
+}
+
+#beschrijving {
+    height: 7.73em;
+}
+/*Uitrusting*/
+#uitrustingen {
+    margin-top: 2em;
+}
+
+.uitrusting {
+}
+
+h5 {
+    text-align: center;
+}
+
+.column1, .column2 {
+    display: inline-block;
+    max-width: 50%;
+    word-break: break-all;
+}
+
+.column1 {
+    padding-left: 0.5em;
+}
+
+.column2 {
+    float: right;
+    padding-right: 0.5em;
+}
+
+#newuit {
+    width: 100%;
+}
+/*Mobile edit pagina*/
+@media only screen and (max-width: 768px), (min-device-width: 768px) and (max-device-width: 1024px) {
+    .column1, .column2 {
+        padding: 0;
+    }
+
+    .editbuttons {
+        text-align: unset;
+    }
+
+        .editbuttons > a {
+            width: 49.1%
+        }
+}
+
+/*#endregion edit pagina*/
+
+/*#endregion CRUD pagina*/

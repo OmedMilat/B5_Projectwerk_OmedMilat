@@ -1,8 +1,8 @@
 ﻿body {
-    padding-top: 50px;
+    padding-top: 85px;
     padding-bottom: 20px;
+    font-family: Nunito;
 }
-
 /* Set padding to keep content from hitting the edges */
 .body-content {
     padding-left: 15px;
@@ -15,10 +15,30 @@
 .dl-horizontal dt {
     white-space: normal;
 }
+.logo {
+    width: 75px;
+    margin-right: 10px;
+}
 
 /* Set width on the form input elements since they're 100% wide by default */
-input,
-select,
-textarea {
-    max-width: 280px;
+@media (min-width: 1200px) {
+    input, select, textarea, .bootstrap-select, .input-group {
+        max-width: 280px;
+    }
+}
+@media (min-width:1400px) {
+    .container {
+        max-width: 1330px;
+    }
+}
+@media (min-width:1600px){
+    .container {
+        max-width:1470px;
+    }
+   #Edit > .col-xl-3, .col-xl-6 {
+        -webkit-box-flex: 0;
+        -ms-flex: 0 0 33.333333%;
+        flex: 0 0 33.333333%;
+        max-width: 33.333333%;
+    }
 }

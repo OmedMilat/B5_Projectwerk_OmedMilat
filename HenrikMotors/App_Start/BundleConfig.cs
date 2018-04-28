@@ -21,17 +21,17 @@ namespace HenrikMotors
 
             bundles.Add(new ScriptBundle("~/bundles/bootstrap").Include(
                       "~/Scripts/bootstrap.min.js",
-                      "~/Scripts/respond.js",
-                      "~/Scripts/Bootstrap plugins/Select/bootstrap-select.min.js",
-                      "~/Scripts/vue.js"));
+                      "~/Scripts/respond.min.js",
+                      "~/Scripts/Bootstrap plugins/Select/bootstrap-select.min.js"
+                      /*"~/Scripts/vue.js"*/));
 
             bundles.Add(new StyleBundle("~/Content/css").Include(
                       "~/Content/Site.css",
                       "~/Content/Bootstrap plugins/Select/bootstrap-select.min.css",
-                      "~/Content/Main.css"));
+                      "~/Content/main.css"));
 
             bundles.Add(new ScriptBundle("~/bundles/AdminSectionScripts").Include(
-                "~/Scripts/Javascript/AdminSection/AdminSection.js",
+                //"~/Scripts/Javascript/AdminSection/AdminSection.js",
                 "~/Scripts/Bootstrap plugins/Fileinput/fileinput.js",
                 "~/Scripts/Bootstrap plugins/Fileinput/theme.min.js",
                 "~/Scripts/Bootstrap plugins/Fileinput/sortable.min.js",

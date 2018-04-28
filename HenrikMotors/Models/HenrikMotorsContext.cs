@@ -4,7 +4,6 @@ using System.Linq;
 using System.Web;
 using System.Data.Entity;
 
-
 namespace HenrikMotors.Models
 {
     public class HenrikMotorsContext : DbContext
