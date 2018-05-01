@@ -4,41 +4,8 @@
 }
 <div class="jumbotron">
     <h1>ASP.NET</h1>
-    <p class="lead">ASP.NET is a free web framework for building great Web sites and Web applications using HTML, CSS and JavaScript.</p>
-    <p><a href="https://asp.net" class="btn btn-primary btn-lg">Learn more &raquo;</a></p>
-
 </div>
 
 <div id="app">
-            <div class="row">
-                <div class="col-md-6 col-xl-4 cards col-xxl-3" v-for="(voertuig,i) in voertuigen" :key="i">
-                    <Card :imagepath="'/Content/images/Voertuig'+voertuig.Id+'/1_'+voertuig.ArtikelNummer+'.png'">
-                        <template slot="title">
-                            {{voertuig.MerkNaam}}
-                        </template>
-                        <template slot="subtitle">
-                            {{voertuig.Model}}
-                        </template>
-                        <template slot="prijs">
-                            {{voertuig.Prijs}}
-                        </template>
-                        <template slot="bouwjaar">
-                            {{voertuig.BouwjaarShort}}
-                        </template>
-                        <template slot="kilometerstand">
-                            {{voertuig.Kilometerstand}}
-                        </template>
-                        <template slot="carrosserietype">
-                            {{voertuig.CarrosserietypeNaam}}
-                        </template>
-                        <template slot="brandstof">
-                            {{voertuig.Brandstof}}
-                        </template>
-                    </Card>
-                </div>
-            </div>
+    <router-view></router-view>
 </div>
-
-@section Scripts{
-    @Scripts.Render("~/Scripts/bundle/Home.js")
-}

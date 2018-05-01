@@ -34,7 +34,7 @@ const getters = {
     uitrustingen: (state) => {
         return state.uitrustingen
     },
-    voertuigUitrusting: (state) => {
+    voertuigUitrustingStore: (state) => {
         return state.voertuigUitrusting
     },
 }

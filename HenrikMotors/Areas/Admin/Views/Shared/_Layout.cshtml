@@ -14,19 +14,20 @@
 <body>
     <nav class="navbar navbar-expand-md navbar-dark fixed-top bg-dark">
         <img class="logo" src="~/Content/images/Site/logo2.png"/>
-        @Html.ActionLink("Henrik Motors", "Index", "Home", new { area = "" }, new { @class = "navbar-brand" })
+        <a class="navbar-brand" href="/">Henrik Motors</a>
+        @*@Html.ActionLink("Henrik Motors", "Index", "Home", new { area = "" }, new { @class = "navbar-brand" })*@
         <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNavAltMarkup" aria-controls="navbarNavAltMarkup" aria-expanded="false" aria-label="Toggle navigation">
             <span class="navbar-toggler-icon"></span>
         </button>
         <div class="collapse navbar-collapse" id="navbarNavAltMarkup">
             <div class="navbar-nav">
-                @Html.ActionLink("Home", "Index", "Home", new { area = "" }, new { @class = "nav-item nav-link" })
+                <a class="nav-item nav-link" href="/">Home</a>
             </div>
             <div class="navbar-nav">
-                @Html.ActionLink("Voertuigen", "Index", "Home", new { area = "" }, new { @class = "nav-item nav-link" })
+                <a class="nav-item nav-link" href="/voertuigen">Voertuigen</a>
             </div>
             <div class="navbar-nav">
-                @Html.ActionLink("Contact", "Index", "Home", new { area = "" }, new { @class = "nav-item nav-link" })
+                <a class="nav-item nav-link" href="/contact">Contact</a>
             </div>
         </div>
     </nav>

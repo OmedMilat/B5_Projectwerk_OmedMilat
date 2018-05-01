@@ -6,7 +6,7 @@
                 <i class="fa fa-floppy-o" title="opslaan"></i>
                 <span class="iconbutton">Opslaan</span>
             </a>
-            <router-link to="/overview" class="tablebutton btn btn-warning">
+            <router-link to="/admin" class="tablebutton btn btn-warning">
                 <i class="fa fa-ban" title="annuleren"></i>
                 <span class="iconbutton">Annuleren</span>
             </router-link>
@@ -177,7 +177,7 @@
                 </div>
             </div>
             <div class="col-12 editbuttons">
-                <router-link to="/overview" class="btn btn-warning">
+                <router-link to="/admin" class="btn btn-warning">
                     <i class="fa fa-ban" title="annuleren"></i>
                     <span class="iconbutton">Annuleren</span>
                 </router-link>
@@ -197,12 +197,13 @@
     export default {
         store,
         computed: {
-            ...mapGetters(["test", "currentVoertuig", "carrosserietypes", "merken", "uitrustingen", "voertuigUitrusting"])
+            ...mapGetters(["test", "currentVoertuig", "carrosserietypes", "merken", "uitrustingen"])
         },
         data() {
             return {
                 tableTitle: "test",
                 newUitrusting: [],
+                voertuigUitrusting: this.$store.getters.voertuigUitrustingStore,
                 IsEdit: false,
                 IsNewVoertuig: false,
                 image: null,
@@ -233,6 +234,9 @@
         mounted() {
                 $('.selectpicker').selectpicker('refresh');
                 this.fetchFotos();
+                this.newUitrusting = [];
+                this.count = -1;
+                this.newUitrusting.push({ UitrustingId: 0 });
         },
         methods: {
             filterUitrustingen: function (CatId) {
@@ -335,37 +339,37 @@
             changeUitrustingen: function (u) {
                 console.log(u);
                 u.Add = true;
-                if (u.UitrustingId - 1 <= self.count && u.Add == true) {
+                if (u.UitrustingId - 1 <= this.count && u.Add == true) {
                     var cvu = {
                         Add: false,
-                        UitrustingId: self.count,
-                        UitrustingNaam: self.newUitrusting.UitrustingNaam,
+                        UitrustingId: this.count,
+                        UitrustingNaam: this.newUitrusting.UitrustingNaam,
                     }
-                    self.newUitrusting.push(cvu);
-                    self.count--;
+                    this.newUitrusting.push(cvu);
+                    this.count--;
                 } else if (u.UitrustingNaam == "") { u.Add = false; }
             },
             addUitrustingenToVoertuig: function () {
-                self.currentVoertuig.VoertuigUitrusting = [];
-                if (self.voertuigUitrusting.length != 0 && self.voertuigUitrusting != null) {
-                    for (var i = 0; i < self.voertuigUitrusting.length; i++) {
+                //this.currentVoertuig.VoertuigUitrusting = [];
+                if (this.voertuigUitrusting.length != 0 && this.voertuigUitrusting != null) {
+                    for (var i = 0; i < this.voertuigUitrusting.length; i++) {
                         var cvu = {
-                            UitrustingId: self.voertuigUitrusting[i],
+                            UitrustingId: this.voertuigUitrusting[i],
                             UitrustingNaam: "",
-                            VoertuigId: self.currentVoertuig.Id
+                            VoertuigId: this.currentVoertuig.Id
                         }
-                        self.currentVoertuig.VoertuigUitrusting[i] = cvu;
+                        this.currentVoertuig.VoertuigUitrusting[i] = cvu;
                     }
                 }
 
-                for (var i = 0; i < self.newUitrusting.length; i++) {
-                    if (self.newUitrusting[i].Add) {
+                for (var i = 0; i < this.newUitrusting.length; i++) {
+                    if (this.newUitrusting[i].Add) {
                         var newcvu = {
-                            UitrustingId: self.newUitrusting[i].UitrustingId,
-                            UitrustingNaam: self.newUitrusting[i].UitrustingNaam,
-                            VoertuigId: self.currentVoertuig.Id
+                            UitrustingId: this.newUitrusting[i].UitrustingId,
+                            UitrustingNaam: this.newUitrusting[i].UitrustingNaam,
+                            VoertuigId: this.currentVoertuig.Id
                         }
-                        self.currentVoertuig.VoertuigUitrusting.push(newcvu);
+                        this.currentVoertuig.VoertuigUitrusting.push(newcvu);
                     }
                 }
             },
@@ -431,18 +435,22 @@
                         if (self.IsSort) {
                             self.sortFotos();
                         }
-                        themerken = self.merken.filter(merk => (merk.Id === res.MerkId))[0];
-                        self.currentVoertuig.MerkNaam = themerken.Naam;
-                        if (!self.IsNewVoertuig) {
-                            theVoertuig = self.voertuigen.filter(voertuig => (voertuig.Id === self.currentVoertuig.Id))[0];
-                            theVoertuig.MerkNaam = themerken.Naam;
-                            theVoertuig.Model = self.currentVoertuig.Model;
-                            theVoertuig.BouwjaarShort = res.BouwjaarShort;
-                            theVoertuig.Prijs = res.Prijs.toLocaleString("de-DE");
-                        } else {
-                            self.currentVoertuig.Id = res.Id;
-                            self.voertuigen.push(self.currentVoertuig);
-                        }
+                        store.dispatch('fetchvoertuigen');
+                        store.dispatch('fetchcarrosserietypes');
+                        store.dispatch('fetchMerken');
+                        store.dispatch('fetchUitrustingen');
+                        //themerken = self.merken.filter(merk => (merk.Id === res.MerkId))[0];
+                        //self.currentVoertuig.MerkNaam = themerken.Naam;
+                        //if (!self.IsNewVoertuig) {
+                        //    theVoertuig = self.voertuigen.filter(voertuig => (voertuig.Id === self.currentVoertuig.Id))[0];
+                        //    theVoertuig.MerkNaam = themerken.Naam;
+                        //    theVoertuig.Model = self.currentVoertuig.Model;
+                        //    theVoertuig.BouwjaarShort = res.BouwjaarShort;
+                        //    theVoertuig.Prijs = res.Prijs.toLocaleString("de-DE");
+                        //} else {
+                        //    self.currentVoertuig.Id = res.Id;
+                        //    self.voertuigen.push(self.currentVoertuig);
+                        //}
                     }).catch(err => console.error('Fout: ' + err));
             },
            

@@ -328,6 +328,10 @@
     <Content Include="Scripts\App\Admin\Overview.Vue" />
     <Content Include="Scripts\App\Admin\AppAdmin.Vue" />
     <Content Include="Scripts\App\Admin\EditPage.Vue" />
+    <Content Include="Scripts\App\Views\App.Vue" />
+    <Content Include="Scripts\App\Views\Voertuigen.Vue" />
+    <Content Include="Scripts\App\Views\Contact.Vue" />
+    <Content Include="Scripts\App\Components\NavRoute.Vue" />
     <None Include="Scripts\jquery-1.10.2.intellisense.js" />
     <Content Include="Scripts\bootstrap.js" />
     <Content Include="Scripts\bootstrap.min.js" />

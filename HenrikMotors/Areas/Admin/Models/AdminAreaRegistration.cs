@@ -16,8 +16,8 @@ namespace HenrikMotors.Areas.Admin
         {
             context.MapRoute(
                 "Admin_default",
-                "Admin/{controller}/{action}/{id}",
-                new { action = "Index", id = UrlParameter.Optional }
+                "Admin/{*url}",
+                new { controller = "Home", action = "Index", id = UrlParameter.Optional }
             );
         }
     }

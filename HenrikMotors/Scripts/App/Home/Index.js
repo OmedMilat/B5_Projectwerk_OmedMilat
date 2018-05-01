@@ -1,12 +1,12 @@
 ﻿import Vue from 'vue'
-import router from '../router'
-import Card from '../Components/Card.vue'
-import AppAdmin from '../Admin/AppAdmin.vue'
+import { router } from '../router'
 import { store }  from '../store'
 import { mapActions } from 'vuex'
 import { mapGetters } from 'vuex'
+import App from '../Views/App.vue'
+import AppAdmin from '../Admin/AppAdmin.vue'
 
-Vue.component("Card", Card);
+
 
 
 new Vue({
@@ -14,19 +14,21 @@ new Vue({
     store,
     router,
     computed: {
-        ...mapGetters(['voertuigen'])
     },
     components: {
-        Card,
+        App,
         AppAdmin,
     },
     created() {
         this.$store.dispatch('fetchvoertuigen');
-        //this.$store.dispatch('fetchVoertuigDetails', 2);
         this.$store.dispatch('fetchcarrosserietypes');
         this.$store.dispatch('fetchMerken');
         this.$store.dispatch('fetchUitrustingen');
     },
     methods:{
     }
+});
+new Vue({
+    el: 'nav',
+    router,
 });
