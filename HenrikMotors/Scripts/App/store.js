@@ -53,6 +53,8 @@ const actions = {
                     var date = new Date(res.Bouwjaar);
                     var month = ("0" + (date.getMonth() + 1)).slice(-2);
                     res.Bouwjaar = `${date.getFullYear()}-${month}`;
+                    res.Prijs = res.Prijs.toLocaleString("de-DE");
+                    res.Kilometerstand = res.Kilometerstand.toLocaleString("de-DE");
                     state.currentVoertuig = res;
                     state.voertuigUitrusting = [];
                     resolve();

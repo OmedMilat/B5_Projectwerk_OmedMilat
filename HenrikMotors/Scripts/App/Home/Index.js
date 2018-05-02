@@ -4,7 +4,7 @@ import { store }  from '../store'
 import { mapActions } from 'vuex'
 import { mapGetters } from 'vuex'
 import App from '../Views/App.vue'
-import AppAdmin from '../Admin/AppAdmin.vue'
+import AppAdmin from '../Views/Admin/AppAdmin.vue'
 
 
 

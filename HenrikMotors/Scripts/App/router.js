@@ -15,13 +15,19 @@ const routes = [
         path: '/Voertuigen', component: require('./Views/Voertuigen.vue')
     },
     {
+        path: '/VoertuigDetail/:id', component: require('./Views/VoertuigDetail.vue')
+    },
+    {
         path: '/Contact', component: require('./Views/Contact.vue')
     },
     {
-        path: '/Admin', component: require('./Admin/AppAdmin.vue')
+        path: '/Login', component: require('./Views/Admin/Login.vue')
     },
     {
-        path: '/Editpage/:id', component: require('./Admin/EditPage.vue')
+        path: '/Admin', component: require('./Views/Admin/AppAdmin.vue')
+    },
+    {
+        path: '/Editpage/:id', component: require('./Views/Admin/EditPage.vue')
     }
 ]
 
